@@ -6,11 +6,23 @@
  *  - getPages()
  *  - getPageBySlug()
  *  - getMenuById()
+ *  - getLayoutById()
+ *  - getLayoutsByIds()
  *
  * The API token and project ID are taken either from the optional parameters
  * or from the environment variables:
  *   NEXT_PUBLIC_JUSTCMS_TOKEN and NEXT_PUBLIC_JUSTCMS_PROJECT.
  */
+
+// Type declarations for environment variables
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      NEXT_PUBLIC_JUSTCMS_TOKEN?: string;
+      NEXT_PUBLIC_JUSTCMS_PROJECT?: string;
+    }
+  }
+}
 
 /**
  * Categories
@@ -162,6 +174,23 @@ export interface Menu {
   items: MenuItem[];
 }
 
+/**
+ * Layouts
+ */
+export interface LayoutItem {
+  label: string;
+  description: string;
+  uid: string;
+  type: 'text' | 'html' | 'boolean' | 'svg';
+  value: string | boolean;
+}
+
+export interface Layout {
+  id: string;
+  name: string;
+  items: LayoutItem[];
+}
+
 export interface PageFilters {
   category: {
     slug: string;
@@ -278,6 +307,24 @@ export function createJustCmsClient(apiToken?: string, projectIdParam?: string) 
   }
 
   /**
+   * Retrieves a single layout by its ID.
+   *
+   * @param id - The layout ID.
+   */
+  async function getLayoutById(id: string): Promise<Layout> {
+    return get<Layout>(`layouts/${id}`);
+  }
+
+  /**
+   * Retrieves multiple layouts by their IDs.
+   *
+   * @param ids - Array of layout IDs.
+   */
+  async function getLayoutsByIds(ids: string[]): Promise<Layout[]> {
+    return get<Layout[]>(`layouts/${ids.join(';')}`);
+  }
+
+  /**
    * Utility: Checks if a content block has a specific style (case-insensitive).
    *
    * @param block - The content block.
@@ -320,6 +367,8 @@ export function createJustCmsClient(apiToken?: string, projectIdParam?: string) 
     getPages,
     getPageBySlug,
     getMenuById,
+    getLayoutById,
+    getLayoutsByIds,
     isBlockHasStyle,
     getLargeImageVariant,
     getFirstImage,
